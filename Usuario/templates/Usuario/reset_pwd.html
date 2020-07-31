@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load cms_tags %}
+{% load static %}
+{% load humanize %}
+{% block 'titulo' %}Detalhes{%endblock%}
+{% block 'conteudo' %}
+<section id="first-board-trocarsenha" class="bg-white vh-min-100 list-me z-2 p-rel pt-5 reveal l-fade-scroll lazy">
+                    <div class="container p-5" id="footer">
+
+                        <div class="row">
+                            <div class="col-12 ml-2 text-center">
+                                        <h2 class="t-orange menu-title">Trocar Senha</h2>
+                                <div class="divisor bg-grey mb-5 mt-3"></div>
+
+                                <!-- BEGIN MARKET JUMBOTRON-->
+                               <form method="POST" class="text-left" action="{% url 'confirma_troca' %}">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="container">
+                              <div class="row">
+                                <div class="col-sm">
+                                  <div class="row justify-content-center">
+                                <div class="col-auto">
+
+                                        {% csrf_token %}
+                                        <div class="modal-header">
+                                            <h6 class="modal-title">Insira a nova senha:</h6>
+                                        </div>
+                                        <br><label>Informe seu e-mail:<br />
+                                            <input id="email_reset_confirma" value="{{email_reset}}" type="text" name="email_reset_confirma" placeholder="E-mail" required>
+                                        </label><br />
+                                    <br><label>Nova Senha:<br />
+                                            <input id="pwd_reset_confirma"  type="password" name="pwd_reset_confirma" placeholder="Senha" required>
+                                        </label><br />
+                                    <br><label>Confirme a Senha:<br />
+                                            <input id="pwd_reset_confirma_2"  type="password" name="pwd_reset_confirma_2" placeholder="Confirme Senha" required>
+                                        </label><br />
+                                    <br><label>Código Recebido no E-mail:<br />
+                                            <input id="pwd_reset_codigo"  type="text" name="pwd_reset_codigo" placeholder="Código" required>
+                                        </label><br />
+                                        <br><br>
+                                    <button type="submit" class="btn btn-block m-0 btn-success" >Mudar Senha</button>
+
+                                </div>
+                            </div>
+                                </div>
+                              </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+    </form>
+
+
+
+
+
+</div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load cms_tags %}
+{% load static %}
+{% load humanize %}
+{% block 'titulo' %}Aprovar{%endblock%}
+{% block 'conteudo' %}
+<section class="bg-dark t-white vh-min-100 list-me z-2 p-rel pt-5 reveal l-fade-scroll" id="registro_oportunidade_unique">
+              <div class="divisor bg-brand-light mb-5 mt-3"></div>
+        <div class="container p-5" id="contact">
+            <div class="section-mask"></div>
+            <div class="row justify-content-center">
+                <div class="col-8 ml-2 text-center">
+                    <h2 class="menu-title">Revenda</h2><br>
+                    <nav>
+                        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                            <a class="nav-item nav-link active" id="nav-home-1" data-toggle="tab" href="#nav-home-id" role="tab" aria-controls="nav-home-id" aria-selected="true">Usuário</a>
+                            <a class="nav-item nav-link" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="false">Revenda</a>
+                        </div>
+                    </nav>
+                        {% csrf_token %}
+                    <div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
+                        <div class="tab-pane fade show active" id="nav-home-id" role="tabpanel" aria-labelledby="nav-home-tab">
+                                        <div class="form-group f-concert-one d-flex flex-column vw-30 text-left">
+                                            <label>Nome do Usuário: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="nome_user" style="color: black;" name="status_registro"value="{{revenda.nome}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Email: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="email_user" style="color: black;" name="status_registro"value="{{revenda.user_revenda.email}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+											<a onclick="clickInfoR()" id="nav-contact-tab-1" data-toggle="tab"  href="#nav-home" role="tab" aria-controls="nav-contact" aria-selected="false" class="btn btn-success">Próximo!</a>
+                                        </div>
+                        </div>
+                        <div class="tab-pane fade show" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                                        <div class="form-group f-concert-one d-flex flex-column vw-30 text-left">
+                                            <label>CNPJ: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="cnpj_cliente" style="color: black;" name="cnpj_cliente"value="{{revenda.revenda.cnpj}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Razão Social: <br />
+                                                <input readonly="readonly" id="razao_cliente" name="razao_cliente" style="color: black;"  value="{{revenda.revenda.razao_social}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>CEP: <br />
+                                                <input readonly="readonly" id="cep_cliente" name="cep_cliente" style="color: black;"  value="{{revenda.revenda.cep}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Endereço: <br />
+                                                <input readonly="readonly" id="address_cliente" name="address_cliente" style="color: black;"  value="{{revenda.revenda.rua}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Cidade: <br />
+                                                <input readonly="readonly" id="city_cliente" name="city_cliente" style="color: black;"  value="{{revenda.revenda.cidade}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+												<label>Estado: <br />
+                                                <input readonly="readonly" id="state_cliente" name="state_cliente" style="color: black;"  value="{{revenda.revenda.estado}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Contato: <br />
+                                                <input readonly="readonly" id="contact_cliente" name="contact_cliente" style="color: black;"  value="{{revenda.revenda.contato}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Telefone: <br />
+                                                <input readonly="readonly" id="phone_cliente" name="phone_cliente" style="color: black;"  value="{{revenda.revenda.telefone}}" class="form-control shadow-none my-1" type="tel">
+                                            </label>
+                                        </div>
+                        </div>
+
+                    </div>
+                    <div style="justify-content: center; align-items: center">
+                        <form method="POST"  action="{% url 'aprovar_a_revenda' revenda.id %}">
+                                            {% csrf_token %}
+                            <input type="hidden" value="{{revenda.id}}" name="id_revenda" id="id_revenda">
+                                          <br> <button type="submit" class="btn btn-success" >Aprovar!</button>
+                        </form>
+
+                        <br> <a href="{% url 'reprovar_revenda' revenda.id %}" class="btn btn-danger" >Reprovar!</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,393 @@
+{% extends 'base.html' %}
+{% load cms_tags %}
+{% load static %}
+{% load humanize %}
+{% block 'titulo' %}Renovação{%endblock%}
+{% block 'conteudo' %}
+<section class="bg-dark t-white vh-min-100 list-me z-2 p-rel pt-5 reveal l-fade-scroll" id="registro_oportunidade_unique">
+              <div class="divisor bg-brand-light mb-5 mt-3"></div>
+        <div class="container p-5" id="contact">
+            <div class="section-mask"></div>
+            <div class="row justify-content-center">
+                <div class="col-8 ml-2 text-center">
+                    <h2 class="menu-title">Renovação</h2><br>
+                    <nav>
+                        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                            <a class="nav-item nav-link active" id="nav-home-1" data-toggle="tab" href="#nav-home-id" role="tab" aria-controls="nav-home-id" aria-selected="true">Renovação</a>
+                            <a class="nav-item nav-link" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab" aria-controls="nav-home" aria-selected="false">Cliente Final</a>
+                            <a class="nav-item nav-link" id="nav-contact-tab1" data-toggle="tab" href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false">Informações do Projeto</a>
+                            <a class="nav-item nav-link" id="nav-about-tab" data-toggle="tab" href="#nav-about" role="tab" aria-controls="nav-about" aria-selected="false">Equipamentos</a>
+                            <a class="nav-item nav-link" id="nav-about-vendedor-tab" data-toggle="tab" href="#nav-about-vendedor" role="tab" aria-controls="nav-about-vendedor" aria-selected="false">Vendedor</a>
+                        </div>
+                    </nav>
+                        {% csrf_token %}
+                    <div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
+                        <div class="tab-pane fade show active" id="nav-home-id" role="tabpanel" aria-labelledby="nav-home-tab">
+                                        <div class="form-group f-concert-one d-flex flex-column vw-30 text-left">
+                                            {% if vendedor %}
+                                                <li><p>Revenda: {{renovacao.registro.id_revenda}}</p></li>
+                                            {% endif %}
+                                            {% if registro.atualizado and registro.status %}
+                                                {% if registro.date_validade|date:"Y-m-d" < today|date:"Y-m-d" %}
+                                                    <label>Status: <br />
+                                                        <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: orange;" name="status_registro"value="Expirado" class="form-control shadow-none my-1" type="text">
+                                                     </label>
+                                                {% else %}
+                                                    <label>Status: <br />
+                                                        <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: green;" name="status_registro"value="Aprovado" class="form-control shadow-none my-1" type="text">
+                                                    </label>
+                                                {% endif %}
+                                            {% elif renovacao.registro.renovado and renovacao.registro.atualizado_renovado and renovacao.aprovado %}
+                                            <label>Status: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: green;" name="status_registro"value="Renovado" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% elif not renovacao.registro.renovado and renovacao.registro.atualizado_renovado and not renovacao.aprovado %}
+                                            <label>Status: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: red;" name="status_registro"value="Renovação Negada" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% elif renovacao.registro.renovado and not renovacao.registro.atualizado_renovado and not renovacao.atualizado %}
+                                            <label>Status: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: yellow;" name="status_registro"value="Renovação: Aguardando" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% elif renovacao.registro.registro_atualizacao %}
+                                            <label>Status: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: yellow;" name="status_registro"value="Atualizado" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% elif not renovacao.registro.status and not renovacao.registro.atualizado %}
+                                                <label>Status: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: yellow;" name="status_registro"value="Aguardando" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% elif renovacao.egistro.atualizado and not renovacao.registro.status %}
+                                                <label>Status: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: red;" name="status_registro"value="Não Aprovado" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% else %}
+                                                <label>Status: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="status_registro" style="color: black; background-color: green;" name="status_registro"value="Aprovado" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% endif %}
+                                            <label>Data do Pedido: <br />
+                                                <input readonly="readonly" id="date_entered_registro" name="date_entered_registro" style="color: black;"  value="{{renovacao.date_created|naturalday}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% if renovacao.registro.registro_atualizacao %}
+                                            <label>Data Atualização: <br />
+                                                <input readonly="readonly" id="date_aprovacao" name="date_aprovacao" style="color: black;"  value="{{renovacao.registro.data_att_registro|naturalday}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% elif renovacao.registro.status %}
+                                                <label>Data Aprovação: <br />
+                                                <input readonly="readonly" id="date_aprovacao" name="date_aprovacao" style="color: black;"  value="{{renovacao.registro.date_atualizado|naturalday}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Válido até: <br />
+                                                <input readonly="readonly" id="date_validade" name="date_validade" style="color: black;"  value="{{renovacao.registro.date_validade|naturalday}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% elif renovacao.registro.atualizado and not renovacao.registro.status %}
+                                                <label>Data Negação: <br />
+                                                <input readonly="readonly" id="date_aprovacao" name="date_aprovacao" style="color: black;"  value="{{renovacao.registro.date_atualizado|naturalday}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            {% endif %}
+                                            {% if renovacao.registro.renovado and renovacao.registro.atualizado_renovado %}
+                                                <label>Número do Registro: <br />
+                                                    <input readonly="readonly" id="number_registro" name="number_registro" style="color: black;"  value="{{renovacao.registro.numero_registro}}" class="form-control shadow-none my-1" type="text">
+                                                </label>
+                                            {% elif renovacao.registro.numero_registro and not renovacao.registro.registro_atualizacao and not renovacao.registro.atualizado_renovado %}
+                                                <label>Número do Registro: <br />
+                                                    <input readonly="readonly" id="number_registro" name="number_registro" style="color: black;"  value="{{renovacao.registro.numero_registro}}" class="form-control shadow-none my-1" type="text">
+                                                </label>
+                                            {% endif %}
+                                            <label>Próxima etapa: <br />
+                                                <textarea readonly="readonly" id="next_stage" name="next_stage" style="color: black;"  class="form-control shadow-none my-1" >{{renovacao.next_stage}}</textarea>
+                                                </label>
+                                            <label>Comentários: <br />
+                                                <textarea readonly="readonly" id="comments" name="comments" style="color: black;"  class="form-control shadow-none my-1" >{{renovacao.comments}}</textarea>
+                                                </label>
+                                            <label>Última Visita ao Cliente: <br />
+                                                <input readonly="readonly" id="visit_date" name="visit_date" style="color: black;"  value="{{renovacao.visit_date|naturalday}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Previsão de Fechamento: <br />
+                                                <input readonly="readonly" id="close_date" name="close_date" style="color: black;"  value="{{renovacao.close_date|naturalday}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Probabilidade de Fechamento: <br />
+                                                    <input readonly="readonly" id="probabilidade" name="probabilidade" style="color: black;"  value="{{renovacao.probabilidade}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Já foi Homologado?: <br />
+                                                    <input readonly="readonly" id="homologado" name="homologado" style="color: black;"  value="{% if renovacao.homologa %}Sim{% else %}Não{% endif %}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+											<a onclick="clickInfoR()" id="nav-contact-tab-1" data-toggle="tab"  href="#nav-home" role="tab" aria-controls="nav-contact" aria-selected="false" class="btn btn-success">Próximo!</a>
+                                        </div>
+                        </div>
+                        <div class="tab-pane fade show" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                                        <div class="form-group f-concert-one d-flex flex-column vw-30 text-left">
+                                            <label>CNPJ: <br />
+                                                <input readonly="readonly" onchange="consultaCNPJ()" id="cnpj_cliente" style="color: black;" name="cnpj_cliente"value="{{renovacao.registro.id_cliente.cnpj}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Razão Social: <br />
+                                                <input readonly="readonly" id="razao_cliente" name="razao_cliente" style="color: black;"  value="{{renovacao.registro.id_cliente.razao_social}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>CEP: <br />
+                                                <input readonly="readonly" id="cep_cliente" name="cep_cliente" style="color: black;"  value="{{renovacao.registro.id_cliente.cep}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Endereço: <br />
+                                                <input readonly="readonly" id="address_cliente" name="address_cliente" style="color: black;"  value="{{renovacao.registro.id_cliente.rua}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Cidade: <br />
+                                                <input readonly="readonly" id="city_cliente" name="city_cliente" style="color: black;"  value="{{renovacao.registro.id_cliente.cidade}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+												<label>Estado: <br />
+                                                <input readonly="readonly" id="state_cliente" name="state_cliente" style="color: black;"  value="{{renovacao.registro.id_cliente.estado}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Contato: <br />
+                                                <input readonly="readonly" id="contact_cliente" name="contact_cliente" style="color: black;"  value="{{renovacao.registro.contato}}" class="form-control shadow-none my-1" type="text">
+                                            </label>
+                                            <label>Telefone: <br />
+                                                <input readonly="readonly" id="phone_cliente" name="phone_cliente" style="color: black;"  value="{{renovacao.registro.id_cliente.telefone}}" class="form-control shadow-none my-1" type="tel">
+                                            </label>
+                                            <label>E-mail: <br />
+                                                <input readonly="readonly" id="email_cliente" name="email_cliente" style="color: black;"  value="{{renovacao.registro.id_cliente.email}}" class="form-control shadow-none my-1" type="email">
+                                            </label>
+											<a onclick="clickClienteL()" id="nav-contact-tab" data-toggle="tab"  href="#nav-contact" role="tab" aria-controls="nav-contact" aria-selected="false" class="btn btn-success">Próximo!</a>
+                                        </div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                             <div class="form-group f-concert-one d-flex flex-column vw-30 text-left">
+                                <label>Aplicação: <br />
+                                    <textarea readonly="readonly" style="color: black;"   name="aplication_projeto"  class="form-control shadow-none my-1">{{renovacao.registro.id_projeto.aplicacao}}</textarea>
+                                </label>
+                                 <label>Especificação Técnica Solicitada<br />
+                                    <textarea readonly="readonly" style="color: black;"  name="esp_projeto" class="form-control shadow-none my-1">{{renovacao.registro.id_projeto.esp_tec}}</textarea>
+                                </label>
+                                  <label>Já foi feito homologação?<br />
+                                    <input class="form-control shadow-none my-1" style="color: black;"  readonly="readonly" type="text" name="homologa_projeto" value="{% if renovacao.registro.id_projeto.homologa %}Sim{% else %}Não{%endif%}">
+                                </label>
+                                 <label>O cliente já utiliza coletor de dados? Se sim, qual modelo e quantidade?<br />
+                                    <textarea readonly="readonly" name="colet_projeto" style="color: black;"  class="form-control shadow-none my-1">{{renovacao.registro.id_projeto.colet_dados}}</textarea>
+                                </label>
+                                 <label>Parceiro de software<br />
+                                    <textarea readonly="readonly" name="parc_projeto" style="color: black;"  class="form-control shadow-none my-1">{{renovacao.registro.id_projeto.parc_soft}}</textarea>
+                                </label>
+                                 <label>Data prevista para conclusão<br />
+                                    <input readonly="readonly" type="text" style="color: black;"  value="{{renovacao.registro.id_projeto.date_concl}}" name="concl_projeto" class="form-control shadow-none my-1">
+                                </label>
+                                 <label>Informações adicionais<br />
+                                    <textarea readonly="readonly" name="info_projeto" style="color: black;"  class="form-control shadow-none my-1">{{renovacao.registro.id_projeto.info_ad}}</textarea>
+                                </label>
+                                 <a onclick="clickInfo()" id="nav-about-tab1"  data-toggle="tab" href="#nav-about" role="tab" aria-controls="nav-about" class="btn btn-success">Próximo!</a>
+                             </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="nav-about" role="tabpanel" aria-labelledby="nav-about-tab">
+                            <div class="form-group f-concert-one d-flex flex-column vw-30 text-left">
+                                <label><br><b>Equipamentos:</b></label><br />
+                                    <table ALIGN=center id="tbpn">
+                                        {% if i %}
+                                            <tr>
+                                                <th valign="center"><label style="color: white">Part Number</label></th>
+                                                <th valign="center"><label style="color: white">Descrição</label></th>
+                                                <th valign="center"><label style="color: white">Quantidade</label></th>
+                                                <th valign="center"><label style="color: white">Valor</label></th>
+                                            </tr>
+                                        {% endif %}
+                                        {% for pn in pnss %}
+                                            {% if not pn.id_equip.is_acessorio and not pn.id_equip.is_concorrente %}
+
+                                                <tr>
+                                                    <td><input style="color: black;" value="{{pn.id_equip}}"  readonly="readonly" type="text" name="pn_projeto{{forloop.counter0}}" id="pn_projeto{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                    <td><input style="color: black;" value="{{pn.id_equip.descricao}}"  readonly="readonly" type="text" name="desc_projeto0" id="desc_projeto0" class="form-control shadow-none my-1"></td>
+                                                    <td><input style="color: black;" value="{{pn.qty}}"  readonly="readonly" type="text" name="qty_projeto0" id="qty_projeto0" class="form-control shadow-none my-1"></td>
+
+                                                    <td><input style="color: black;" value="{{pn.valor}}"  readonly="readonly" type="text" name="value_projeto0" id="value_projeto0" class="form-control shadow-none my-1"></td>
+                                                    {% if not registro.status and not registro.atualizado and is_gerente %}
+                                                    <td>
+                                                                <a onclick="aprovar_line_equip({{forloop.counter0}})" class="btn btn-success" id="btnAprovar_line_equip{{forloop.counter0}}">
+                                                                    Aprovado
+                                                                </a>
+                                                    </td>
+                                                    {% elif registro.status and registro.atualizado and is_gerente %}
+                                                    <td>
+                                                                {% if pn.aprovado and not pn.atualizado %}
+                                                                    <a class="btn btn-success" id="btnAprovar_line_equip{{forloop.counter0}}">
+                                                                        Aprovado
+                                                                    </a>
+                                                                {% elif not pn.aprovado and not pn.atualizado%}
+                                                                    <a class="btn btn-danger" id="btnAprovar_line_equip{{forloop.counter0}}">
+                                                                        Negado
+                                                                    </a>
+                                                                {% elif pn.atualizado %}
+                                                                     <a onclick="aprovar_line_equip({{forloop.counter0}})" class="btn btn-warning" id="btnAprovar_line_equip{{forloop.counter0}}">
+                                                                        Atualizado
+                                                                     </a>
+                                                                {% endif %}
+                                                    </td>
+                                                    {% endif %}
+
+                                                    {% if registro.status and registro.atualizado and not is_gerente %}
+                                                    <td>
+                                                                {% if pn.aprovado and not pn.atualizado %}
+                                                                    <a class="btn btn-success" id="btnAprovar_line_equip{{forloop.counter0}}">
+                                                                        Aprovado
+                                                                    </a>
+                                                                {% elif not pn.aprovado and not pn.atualizado %}
+                                                                    <a class="btn btn-danger" id="btnAprovar_line_equip{{forloop.counter0}}">
+                                                                        Negado
+                                                                    </a>
+                                                                {% elif pn.atualizado %}
+                                                                     <a class="btn btn-warning" id="btnAprovar_line_equip{{forloop.counter0}}">
+                                                                        Atualizado
+                                                                     </a>
+                                                                {% endif %}
+                                                    </td>
+                                                    {% endif %}
+                                                                {% if not registro.status and not registro.atualizado %}
+                                                                    <td><input style="color: black;" value="1"  type="hidden" name="aprovado_equip{{forloop.counter0}}" id="aprovado_equip{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif pn.aprovado and not pn.atualizado %}
+                                                                    <td><input style="color: black;" value="1"  type="hidden" name="aprovado_equip{{forloop.counter0}}" id="aprovado_equip{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif not pn.aprovado and not pn.atualizado %}
+                                                                    <td><input style="color: black;" value="0"  type="hidden" name="aprovado_equip{{forloop.counter0}}" id="aprovado_equip{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif pn.atualizado %}
+                                                                     <td><input style="color: black;" value="0"  type="hidden" name="aprovado_equip{{forloop.counter0}}" id="aprovado_equip{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% endif %}
+
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                <br>
+                                <label><br><b>Concorrente:</b></label><br />
+                                    <table ALIGN=center id="tbacc">
+                                        {% if j %}
+                                            <tr>
+                                                <th valign="center"><label style="color: white">Part Number</label></th>
+                                                <th valign="center"><label style="color: white">Descrição</label></th>
+                                                <th valign="center"><label style="color: white">Quantidade</label></th>
+                                                <th valign="center"><label style="color: white">Valor</label></th>
+                                            </tr>
+                                        {% endif %}
+                                        {% for pn in pnss %}
+                                            {% if pn.id_equip.is_concorrente %}
+                                                <tr>
+                                                    <td><input style="color: black;" value="{{pn.id_equip}}"  readonly="readonly" type="text" name="c_pn_projeto{{forloop.counter0}}" id="c_pn_projeto{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                    <td><input style="color: black;" value="{{pn.id_equip.descricao}}"  readonly="readonly" type="text" name="ac_desc_projeto0" id="c_desc_projeto0" class="form-control shadow-none my-1"></td>
+                                                    <td><input style="color: black;" value="{{pn.qty}}"  readonly="readonly" type="text" name="c_qty_projeto0" id="c_qty_projeto0" class="form-control shadow-none my-1"></td>
+                                                    <td><input style="color: black;" value="{{pn.valor}}"  readonly="readonly" type="text" name="c_value_projeto0" id="c_value_projeto0" class="form-control shadow-none my-1"></td>
+                                                    </td>
+                                                    {% endif %}
+
+                                                    </td>
+                                                                {% if not registro.status and not registro.atualizado %}
+                                                                    <td><input style="color: black;" value="1"  type="hidden" name="c_aprovado_acess{{forloop.counter0}}" id="c_aprovado_acess{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif pn.aprovado and not pn.atualizado %}
+                                                                    <td><input style="color: black;" value="1"  type="hidden" name="c_aprovado_acess{{forloop.counter0}}" id="c_aprovado_acess{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif not pn.aprovado and not pn.atualizado %}
+                                                                    <td><input style="color: black;" value="0"  type="hidden" name="c_aprovado_acess{{forloop.counter0}}" id="c_aprovado_acess{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif pn.atualizado %}
+                                                                     <td><input style="color: black;" value="0"  type="hidden" name="c_aprovado_acess{{forloop.counter0}}" id="c_aprovado_acess{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% endif %}
+
+                                                </tr>
+                                        {% endfor %}
+                                    </table>
+                                </label>
+                                <label><br><b>Acessórios:</b></label><br />
+                                    <table ALIGN=center id="tbac">
+                                        {% if j %}
+                                            <tr>
+                                                <th valign="center"><label style="color: white">Part Number</label></th>
+                                                <th valign="center"><label style="color: white">Descrição</label></th>
+                                                <th valign="center"><label style="color: white">Quantidade</label></th>
+                                                <th valign="center"><label style="color: white">Valor</label></th>
+                                            </tr>
+                                        {% endif %}
+                                        {% for pn in pnss %}
+                                            {% if pn.id_equip.is_acessorio %}
+                                                <tr>
+                                                    <td><input style="color: black;" value="{{pn.id_equip}}"  readonly="readonly" type="text" name="ac_pn_projeto{{forloop.counter0}}" id="ac_pn_projeto{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                    <td><input style="color: black;" value="{{pn.id_equip.descricao}}"  readonly="readonly" type="text" name="ac_desc_projeto0" id="ac_desc_projeto0" class="form-control shadow-none my-1"></td>
+                                                    <td><input style="color: black;" value="{{pn.qty}}"  readonly="readonly" type="text" name="ac_qty_projeto0" id="ac_qty_projeto0" class="form-control shadow-none my-1"></td>
+                                                    <td><input style="color: black;" value="{{pn.valor}}"  readonly="readonly" type="text" name="ac_value_projeto0" id="ac_value_projeto0" class="form-control shadow-none my-1"></td>
+                                                    {% if not registro.status and not registro.atualizado and is_gerente %}
+                                                    <td>
+                                                                <a onclick="aprovar_line_acess({{pn.id}})" class="btn btn-success" id="btnAprovar_line{{forloop.counter0}}">
+                                                                    Aprovado
+                                                                </a>
+                                                    </td>
+                                                    {% elif registro.status and registro.atualizado and is_gerente%}
+                                                        <td>
+                                                                {% if pn.aprovado and not pn.atualizado%}
+                                                                    <a class="btn btn-success" id="btnAprovar_line_acess{{forloop.counter0}}">
+                                                                        Aprovado
+                                                                    </a>
+                                                                {% elif not pn.aprovado and not pn.atualizado%}
+                                                                    <a class="btn btn-danger" id="btnAprovar_line_acess{{forloop.counter0}}">
+                                                                        Negado
+                                                                    </a>
+                                                                {% elif pn.atualizado %}
+                                                                     <a onclick="aprovar_line_acess({{forloop.counter0}})" class="btn btn-warning" id="btnAprovar_line_acess{{forloop.counter0}}">
+                                                                        Atualizado
+                                                                     </a>
+                                                                {% endif %}
+                                                    </td>
+                                                    {% endif %}
+                                                     {% if registro.status and registro.atualizado and not is_gerente %}
+                                                    <td>
+                                                                {% if pn.aprovado and not pn.atualizado %}
+                                                                    <a class="btn btn-success" id="btnAprovar_line_acess{{forloop.counter0}}">
+                                                                        Aprovado
+                                                                    </a>
+                                                                {% elif not pn.aprovado and not pn.atualizado %}
+                                                                    <a class="btn btn-danger" id="btnAprovar_line_acess{{forloop.counter0}}">
+                                                                        Negado
+                                                                    </a>
+                                                                {% elif pn.atualizado %}
+                                                                     <a class="btn btn-warning" id="btnAprovar_line_acess{{forloop.counter0}}">
+                                                                        Atualizado
+                                                                     </a>
+                                                                {% endif %}
+
+                                                    </td>
+                                                    {% endif %}
+                                                                {% if not registro.status and not registro.atualizado %}
+                                                                    <td><input style="color: black;" value="1"  type="hidden" name="aprovado_acess{{forloop.counter0}}" id="aprovado_acess{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif pn.aprovado and not pn.atualizado %}
+                                                                    <td><input style="color: black;" value="1"  type="hidden" name="aprovado_acess{{forloop.counter0}}" id="aprovado_acess{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif not pn.aprovado and not pn.atualizado %}
+                                                                    <td><input style="color: black;" value="0"  type="hidden" name="aprovado_acess{{forloop.counter0}}" id="aprovado_acess{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% elif pn.atualizado %}
+                                                                     <td><input style="color: black;" value="0"  type="hidden" name="aprovado_acess{{forloop.counter0}}" id="aprovado_acess{{forloop.counter0}}" class="form-control shadow-none my-1"></td>
+                                                                {% endif %}
+
+                                                </tr>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                <br><a onclick="clickEquip()" id="nav-about-vendedor-tab1" data-toggle="tab" href="#nav-about-vendedor" role="tab" aria-controls="nav-about-vendedor" class="btn btn-success">Próximo!</a>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-about-vendedor" role="tabpanel" aria-labelledby="nav-about-vendedor-tab">
+                            <div class="form-group f-concert-one d-flex flex-column vw-30 text-left">
+                                <label>Vendedor: <br />
+                                    <input style="color: black;"  value="{{renovacao.registro.vendedor}}"  class="form-control shadow-none my-1" type="text" name="vendedor" readonly="readonly" >
+                                </label>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                    {% if not renovacao.atualizado and is_gerente %}
+
+                    <form method="POST" class="t-white text-left" action="{% url 'aprovar_renovacao' renovacao.id %}">
+                        {% csrf_token %}
+                        <div style="text-align: center;">
+                            <br> <button type="submit" class="btn btn-success" >Aprovar!</button>
+                            </div>
+                        </form>
+                         <div data-toggle="modal" data-target="#reprovar_renovacao" >
+                                        <a class="btn btn-danger" id="btnReprovar">
+                                            Negar
+                                        </a>
+                         </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

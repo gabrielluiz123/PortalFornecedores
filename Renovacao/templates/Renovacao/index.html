@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load cms_tags %}
+{% load static %}
+{% load humanize %}
+{% block 'titulo' %}Renovações{%endblock%}
+{% block 'conteudo' %}
+<section class="bg-dark t-white vh-min-100 list-me z-2 p-rel pt-5 reveal l-fade-scroll" id="registro_oportunidade">
+	<div class="divisor bg-brand-light mb-5 mt-3"></div>
+	<div class="container p-5" id="contact">
+		<div class="row justify-content-center">
+			<div class="col-8 ml-2">
+                <h2 style="text-align: center !important;" class="menu-title">Pedidos de Renovação</h2><br>
+				<div class="row">
+  {% for renovacao in renovacoes %}
+      <div class="col-sm-6">
+        <div style="background-color: transparent !important;" class="card">
+          <div class="card-body">
+            <h5 class="card-title"><a style="text-align: left !important;" href="{% url 'detalhe_renovacao' renovacao.id %}">Cliente: {{renovacao.registro.id_cliente}}</a></h5>
+            <ul>
+					<li><p>{%if registro.vendedor%}Vendedor: {{renovacao.registro.vendedor}} {%else%} Vendedor: {%endif%}</p></li>
+					<li><p>Data do pedido: {{renovacao.date_created|naturalday}}</p></li>
+                     {% if vendedor %}
+						<li><p>Revenda: {{renovacao.registro.id_revenda}}</p></li>
+                        <li><p>Usuário: {{renovacao.registro.id_revenda_user.user_revenda.email}}</p></li>
+					{% endif %}
+                    {% if renovacao.aprovado %}
+                        <li><p style="color:Green;">Status: Renovado</p></li>
+                    {% elif renovacao.atualizado and not renovacao.aprovado %}
+                        <li><p style="color:red;">Status: Renovação Negada:</p></li>
+                    {% elif renovacao.registro.renovado and not renovacao.registro.atualizado_renovado and not renovacao.atualizado %}
+                        <li><p style="color:#ffbf00;">Status: Renovado: Aguardando</p></li>
+                    {% elif renovacao.registro.registro_atualizacao %}
+                        <li><p style="color:yellow;">Status: Atualizado</p></li>
+					{% elif not renovacao.registro.status and not renovacao.registro.atualizado %}
+						<li><p style="color:#ffbf00;">Status: Aguardando</p></li>
+					{% elif renovacao.registro.atualizado and not renovacao.registro.status %}
+						<li><p style="color:red;">Status: Não Aprovado</p></li>
+					{% else %}
+						<li><p style="color:green;">Status: Aprovado</p></li>
+					{% endif %}
+                    {% if renovacao.registro.renovado and renovacao.registro.atualizado_renovado %}
+                        <li><p>Data Renovação: {{renovacao.date_atualizado|naturalday}}</p></li>
+                    {% elif not renovacao.registro.renovado and renovacao.registro.atualizado_renovado %}
+                        <li><p>Data Renovação Negada: {{renovacao.date_atualizado|naturalday}}</p></li>
+                    {% elif renovacao.registro.registro_atualizacao %}
+                        <li><p>Data Atualização: {{renovacao.registro.data_att_registro|naturalday}}</p></li>
+					{% elif renovacao.registro.status %}
+						<li><p>Data aprovação: {{renovacao.registro.date_atualizado|naturalday}}</p></li>
+					{% elif renovacao.registro.atualizado and not renovacao.registro.status %}
+						<li><p>Data Negação: {{renovacao.registro.date_atualizado|naturalday}}</p></li>
+					{% endif %}
+					{% if renovacao.registro.numero_registro and not renovacao.registro.registro_atualizacao %}
+						<li><p>Número do Registro: {{renovacao.registro.numero_registro}}</p></li>
+					{% endif %}
+				</ul>
+            <a href="{% url 'detalhe_renovacao' renovacao.id  %}" class="btn btn-primary">Acessar Detalhes</a>
+          </div>
+        </div>
+      </div>
+     {% endfor %}
+</div>
+			</div>
+		</div>
+{% if user %}
+<div class="pagination">
+    <ul class="pagination">
+        {% if user.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">&laquo;</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ user.previous_page_number }}#registro_oportunidade">&lsaquo;</a>
+        </li>
+        {% endif %}
+        {% for num in user.paginator.page_range %}
+            {% if user.number == num %}
+            <li class="page-item active">
+                <a class="page-link" href="?page={{ num }}#registro_oportunidade">{{ num }}</a>
+            </li>
+            {% elif num > user.number|add:'-3' and num < user.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}#registro_oportunidade">{{ num }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}#registro_oportunidade">&rsaquo;</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}#registro_oportunidade">&raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}
+	</div>
+</section>
+{% endblock %}
