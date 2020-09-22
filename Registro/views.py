@@ -87,6 +87,7 @@ class RegistroIndex(View):
             nome = None
         today = timezone.now()
         self.contexto = {
+            'index': True,
             'today': today,
             'nome': nome,
             'aprovado': self.revenda_user_aprovado,
@@ -114,6 +115,7 @@ class RegistroIndex(View):
             nome = None
         today = timezone.now()
         self.contexto = {
+            'index': True,
             'aprovado': self.revenda_user_aprovado,
             'today': today,
             'nome': nome,
@@ -160,10 +162,6 @@ class RegistroIndex(View):
                     contato = request.POST.get('contato_revenda')
 
                     revenda = Revenda(razao_social=razao, cnpj=cnpj, rua=address, cidade=cidade, estado=state, contato=contato, cep=cep, telefone=telefone)
-                    try:
-                        revenda.save()
-                    except:
-                        messages.error(request, 'Revenda nao cadastrada!')
                     nome = request.POST.get('name')
                     email = request.POST.get('email')
                     senha = request.POST.get('pwd')
@@ -201,6 +199,7 @@ class RegistroIndex(View):
                         messages.error(request, 'Falha ao se cadastrar! Contacte o administrador do site!')
                         return render(request, self.template_name, self.contexto)
                     try:
+                        revenda.save()
                         user_revenda = Revenda_User(nome=nome, revenda=revenda_user_o, user_revenda=user, aprovado=False)
                         user_revenda.save()
                         messages.success(request, 'Revenda cadastrada com sucesso!')
@@ -253,7 +252,7 @@ class RegistroIndex(View):
                 user_revenda = Revenda_User(nome=nome, revenda=revenda_user_o, user_revenda=user, aprovado=True)
                 user_revenda.save()
                 messages.success(request, 'Cadastrado com sucesso!')
-                return render(request, self.template_name, self.contexto)
+                return redirect('index')
             except:
                 messages.error(request, 'Falha ao se cadastrar! Contacte o administrador do site!')
                 return render(request, self.template_name, self.contexto)

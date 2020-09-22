@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load cms_tags %}
+{% load static %}
+{% load humanize %}
+{% block 'titulo' %}Perfil{%endblock%}
+{% block 'conteudo' %}
+<section id="first-board-trocarsenha" class="bg-white vh-min-100 list-me z-2 p-rel pt-5 reveal l-fade-scroll lazy">
+                    <div class="container p-5" id="footer">
+
+                        <div class="row">
+                            <div class="col-12 ml-2 text-center">
+                                        <h2 class="t-orange menu-title">Perfil</h2>
+                                <div class="divisor bg-grey mb-5 mt-3"></div>
+
+                                <!-- BEGIN MARKET JUMBOTRON-->
+                               <form method="POST" class="text-left" action="{% url 'salva_perfil' %}">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="container">
+                              <div class="row">
+                                <div class="col-sm">
+                                  <div class="row justify-content-center">
+                                <div class="col-auto">
+
+                                        {% csrf_token %}
+
+                                        <br><label>Informe seu nome:<br />
+                                            <input id="nome_perfil" value="{{usuario.first_name}}" type="text" name="nome_perfil" placeholder="E-mail" required>
+                                        </label><br />
+
+                                    <br><label>Nova Senha:<br />
+                                            <input id="pwd_perfil_confirma"  type="password" name="pwd_perfil_confirma" placeholder="Senha">
+                                        </label><br />
+                                    <br><label>Confirme a Senha:<br />
+                                            <input id="pwd_perfil_confirma_2"  type="password" name="pwd_perfil_confirma_2" placeholder="Confirme Senha">
+                                        </label><br />
+                                        <br><br>
+                                    <button type="submit" class="btn btn-block m-0 btn-success" >Atualizar</button>
+
+                                </div>
+                            </div>
+                                </div>
+                              </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+    </form>
+
+
+
+
+
+</div>
+</section>
+
+{% endblock %}

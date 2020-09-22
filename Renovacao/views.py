@@ -217,7 +217,6 @@ class AprovarRenovacao(DetalhesIndex):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Pedido de renovação de Registro Aprovado! Validade: 30 dias."
         msg['From'] = me
-        msg['To'] = you
         self.url = f'http://{self.url_bd}/pt/Renovacao/Detalhe/{self.pk}'
         text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
         style = """\
@@ -379,13 +378,13 @@ class AprovarRenovacao(DetalhesIndex):
         emails = Gerente.objects.get(url__url=self.url_bd, nome='noreply')
         me = emails.email
         s.login(me, emails.senha)
-        msg['To'] = you
+        email_aux = "gabriel.santos@primeinterway.com.br"
         emails = Gerente.objects.filter(url__url=self.url_bd)
-        msg["Cc"] = ""
         for email in emails:
             print(email)
-            msg["Cc"] = str(email) + "," + msg["Cc"]
-        s.sendmail(me, msg["To"].split(",") + msg["Cc"].split(","), msg.as_string())
+            email_aux = str(email) + ", " + email_aux
+        msg["To"] = you + ", " + email_aux
+        s.sendmail(me, msg["To"].split(","), msg.as_string())
         s.quit()
         return
 
@@ -430,7 +429,6 @@ class ReprovarRenovacao(DetalhesIndex):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Pedido de renovação de Registro não foi Aprovado"
         msg['From'] = me
-        msg['To'] = you
         self.url = f'http://{self.url_bd}/pt/Renovacao/Detalhe/{self.pk}'
         text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
         style = """\
@@ -592,13 +590,13 @@ class ReprovarRenovacao(DetalhesIndex):
         emails = Gerente.objects.get(url__url=self.url_bd, nome='noreply')
         me = emails.email
         s.login(me, emails.senha)
-        msg['To'] = you
-        msg["Cc"] = ""
+        email_aux = "gabriel.santos@primeinterway.com.br"
         emails = Gerente.objects.filter(url__url=self.url_bd)
         for email in emails:
             print(email)
-            msg["Cc"] = str(email) + "," + msg["Cc"]
-        s.sendmail(me, msg["To"].split(",") + msg["Cc"].split(","), msg.as_string())
+            email_aux = str(email) + ", " + email_aux
+        msg["To"] = you + ", " + email_aux
+        s.sendmail(me, msg["To"].split(","), msg.as_string())
         s.quit()
         return
 

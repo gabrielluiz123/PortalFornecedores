@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load cms_tags %}
+{% load static %}
+{% load humanize %}
+{% block 'titulo' %}Gerenciar{%endblock%}
+{% block 'conteudo' %}
+<section id="first-board-trocarsenha" class="bg-white vh-min-100 list-me z-2 p-rel pt-5 reveal l-fade-scroll lazy">
+                     <div class="container p-5" id="quem_somos">
+
+                        <div class="row">
+                            <div class="col-12 ml-2 text-center">
+                                <h2 class="t-orange menu-title">Gerenciar</h2>
+                                    <table style="border-spacing: 0 8px;border-spacing: 2px 8px; ">
+                                        <thead>
+                                        <th style="color: #00aeef !important">Usuário</th>
+                                        <th style="color: #00aeef !important">E-mail</th>
+                                        </thead>
+                                        {% for user in users_revenda %}
+                                            <tr>
+                                                <td style="padding: 5px 20px;">{{user.nome}}</td>
+                                                <td style="padding: 5px 20px;">{{user.user_revenda.username}}</td>
+                                                <td style="padding: 5px 20px;"><a class="btn btn-block m-0 btn-danger" href="{% url 'inativar_usuario' user.user_revenda.id %}">Inativar</a></td>
+
+                                            </tr>
+                                         {% endfor %}
+                                     </table>
+
+                                </div>
+                            </div>
+                                </div>
+
+</section>
+
+{% endblock %}

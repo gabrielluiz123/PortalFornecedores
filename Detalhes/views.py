@@ -100,6 +100,74 @@ class DetalhesIndex(View):
         return render(request, self.template_name, self.contexto)
 
 
+class DetalhesIndexExpirado(View):
+    model = 'Registro'
+    template_name = 'Detalhes/index.html'
+    vendedores = Vendedor.objects.all()
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.empresa = Url.objects.get(url=request.META['HTTP_HOST']).empresa
+        self.id_user = request.user
+        try:
+            self.vendedor_user = Vendedor.objects.get(user_vendedor=self.id_user).is_gerente
+        except:
+            self.vendedor_user = None
+        self.time = timezone.now()
+        self.registros_att = Registro.objects.filter(atualizado=False, marca=self.empresa)
+        self.renovacoes_att = Renovacao_Registro.objects.filter(atualizado=False, registro__marca=self.empresa)
+        self.registros_att_att = Registro.objects.filter(registro_atualizacao=True, marca=self.empresa, atualizado=True)
+        self.count_registro = len(self.registros_att) + len(self.registros_att_att)
+        self.count_renovacao = len(self.renovacoes_att)
+        if self.vendedor_user:
+            self.registro = Registro.objects.filter(marca=self.empresa, date_validade__lte=self.time.date(), date_validade__isnull=False).order_by('-date_entered')
+        else:
+            try:
+                self.revenda_user_id = Revenda_User.objects.filter(user_revenda=self.id_user).first()
+                if self.revenda_user_id.is_admin:
+                    self.revenda = Revenda.objects.filter(revenda_user__user_revenda=self.id_user).first()
+                    self.registro = Registro.objects.filter(id_revenda=self.revenda, marca=self.empresa, date_validade__lte=self.time.date(), date_validade__isnull=False).order_by(
+                        '-date_entered')
+                else:
+                    self.registro = Registro.objects.filter(id_revenda_user=self.revenda_user_id,
+                                                            marca=self.empresa, date_validade__lte=self.time.date(), date_validade__isnull=False).order_by('-date_entered')
+            except:
+                self.id_vendedor_id = Vendedor.objects.filter(user_vendedor=self.id_user).first()
+                self.registro = Registro.objects.filter(id_vendedor=self.id_vendedor_id, marca=self.empresa, date_validade__lte=self.time.date()).order_by(
+                    '-date_entered').exclude(date_validade=False)
+        page = request.GET.get('page', 1)
+        paginator = Paginator(self.registro, 6)
+        try:
+            self.registro = paginator.page(page)
+        except PageNotAnInteger:
+            self.registro = paginator.page(1)
+        except EmptyPage:
+            self.registro = paginator.page(paginator.num_pages)
+
+        if request.user.is_authenticated:
+            nome = request.user.first_name.strip().split(' ')[0].strip().split(' ')[0]
+        else:
+            nome = None
+        today = timezone.now().date()
+        self.contexto = {
+            'today': today,
+            'nome': nome,
+            'aprovado': True,
+            'empresa': self.empresa,
+            'number_registro': self.count_registro,
+            'number_renovacao': self.count_renovacao,
+            'vendedor_gerente': self.vendedor_user,
+            'vendedor': self.vendedor_user,
+            'user': self.registro,
+            'registros': self.registro,
+            'users': request.user.is_authenticated,
+            'vendedores': self.vendedores,
+        }
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, self.contexto)
+
+
 class DetalhesIndexAguardando(View):
     model = 'Registro'
     template_name = 'Detalhes/index.html'
@@ -765,6 +833,20 @@ class Aprovar(DetalhesIndex):
             }
             requests.post("http://crmalpha.grupo-artico.com/index.php?entryPoint=OportunidadeCotacaoPortal",
                           json=jsonstr)
+            proj = Equip_Projeto.objects.filter(id_projeto=self.projeto_update_q)
+            for i in proj:
+                jsonstr2 = {
+                    "token": f"{self.token}",
+                    "fase": "2",
+                    "registro_id": f"{self.pk}",
+                    "namePN": f"{i.name}",
+                    "valorPN": f"{i.valor}",
+                    "qtyPN": f"{i.qty}",
+                    "descrPN": f"{i.id_equip.descricao}"
+                }
+                requests.post(
+                    "http://crmalpha.grupo-artico.com/index.php?entryPoint=OportunidadeCotacaoPortal",
+                    json=jsonstr2)
             return render(request, self.template_name, self.contexto)
         else:
             return render(request, self.template_name, self.contexto)
@@ -781,7 +863,6 @@ class Aprovar(DetalhesIndex):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Registro de Oportunidade Aprovado"
         msg['From'] = me
-        msg['To'] = you
         self.url = f'http://{self.url_bd}/pt/Detalhe/Detalhe/{self.pk}'
 
         text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
@@ -945,13 +1026,13 @@ class Aprovar(DetalhesIndex):
         me = emails.email
         s.login(me, emails.senha)
 
-        msg['To'] = you
-        msg["Cc"] = ""
+        email_aux = "gabriel.santos@primeinterway.com.br"
         emails = Gerente.objects.filter(url__url=self.url_bd)
         for email in emails:
             print(email)
-            msg["Cc"] = str(email) + "," + msg["Cc"]
-        s.sendmail(me, msg["To"].split(",") + msg["Cc"].split(","), msg.as_string())
+            email_aux = str(email) + ", " + email_aux
+        msg["To"] = you+", " + email_aux
+        s.sendmail(me, msg["To"].split(","), msg.as_string())
         s.quit()
         return
 
@@ -988,7 +1069,6 @@ class Aprovar_Revenda(DetalhesIndex):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Cadastro de Revenda Aprovado"
         msg['From'] = me
-        msg['To'] = you
         self.url = f'http://{self.url_bd}/pt'
         text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
         style = """\
@@ -1150,15 +1230,13 @@ class Aprovar_Revenda(DetalhesIndex):
         emails = Gerente.objects.get(url__url=self.url_bd, nome='noreply')
         me = emails.email
         s.login(me, emails.senha)
-        msg['To'] = you
+        email_aux = "gabriel.santos@primeinterway.com.br"
         emails = Gerente.objects.filter(url__url=self.url_bd)
-        msg["Cc"] = ""
         for email in emails:
             print(email)
-            msg["Cc"] = str(email)+","+msg["Cc"]
-        print("AQUI3")
-        print(msg["Cc"])
-        s.sendmail(me, msg["To"].split(",") + msg["Cc"].split(","), msg.as_string())
+            email_aux = str(email)+", "+email_aux
+        msg["To"] = you+", "+email_aux
+        s.sendmail(me, msg["To"].split(","), msg.as_string())
         s.quit()
         return
 
@@ -1196,7 +1274,6 @@ class Reprovar(DetalhesIndex):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Registro de Oportunidade Negado"
         msg['From'] = me
-        msg['To'] = you
         self.url = f'http://{self.url_bd}/pt/Detalhe/Detalhe/{self.pk}'
 
         text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
@@ -1359,18 +1436,12 @@ class Reprovar(DetalhesIndex):
         emails = Gerente.objects.get(url__url=self.url_bd, nome='noreply')
         me = emails.email
         s.login(me, emails.senha)
-        msg['To'] = you
+        email_aux = "gabriel.santos@primeinterway.com.br"
         emails = Gerente.objects.filter(url__url=self.url_bd)
-        msg["Cc"] = ""
-        ml = ()
-        ml = list(ml)
         for email in emails:
             print(email)
-            ml.append(str(email))
-        msg["Cc"] = ",".join(tuple(ml))
-        hk = ",".join(tuple(ml))
-        print(msg["Cc"])
-        msg['To'] = msg['To'] + "," + str(hk)
+            email_aux = str(email) + ", " + email_aux
+        msg["To"] = you + ", " + email_aux
         s.sendmail(me, msg["To"].split(","), msg.as_string())
         s.quit()
         return
@@ -1409,7 +1480,6 @@ class Reprovar_Revenda(DetalhesIndex):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = "Cadastro de Revenda não aprovado"
         msg['From'] = me
-        msg['To'] = you
         self.url = f'http://{self.url_bd}/pt/'
         text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
         style = """\
@@ -1571,12 +1641,12 @@ class Reprovar_Revenda(DetalhesIndex):
         emails = Gerente.objects.get(url__url=self.url_bd, nome='noreply')
         me = emails.email
         s.login(me, emails.senha)
-        msg['To'] = you
+        email_aux = "gabriel.santos@primeinterway.com.br"
         emails = Gerente.objects.filter(url__url=self.url_bd)
-        msg["Cc"] = ""
         for email in emails:
             print(email)
-            msg["Cc"] = str(email) + "," + msg["Cc"]
-        s.sendmail(me, msg["To"].split(",") + msg["Cc"].split(","), msg.as_string())
+            email_aux = str(email) + ", " + email_aux
+        msg["To"] = you + ", " + email_aux
+        s.sendmail(me, msg["To"].split(","), msg.as_string())
         s.quit()
         return

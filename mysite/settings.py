@@ -76,7 +76,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'pt'
 
-TIME_ZONE = 'America/Sao_Paulo'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -249,7 +249,7 @@ DATABASES = {
         'CONN_MAX_AGE': 0,
         'ENGINE': 'django.db.backends.mysql',
         'HOST': '52.86.229.161',
-        'NAME': 'PortalOportunidades',
+        'NAME': 'HomologaPortalOportunidades',
         'PASSWORD': 'db2019AIDC#Crm',
         'PORT': '',
         'USER': 'MysqlArtico'
@@ -263,10 +263,4 @@ THUMBNAIL_PROCESSORS = (
     'easy_thumbnails.processors.filters'
 )
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'gabriel.santos@primeinterway.com.br'
-EMAIL_HOST_PASSWORD = 'fordprefect@123'
 

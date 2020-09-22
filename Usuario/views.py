@@ -9,7 +9,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from django.utils import timezone
 from .models import Usuario
-from Registro.models import Projeto, Registro, Url
+from Registro.models import Projeto, Registro, Url, Gerente
 from Renovacao.models import Renovacao_Registro
 from Equipamento.models import Equipamento, Equip_Projeto
 from Cliente.models import Vendedor, Revenda, Cliente_Final, Revenda_User
@@ -28,6 +28,306 @@ class UsuarioApphook(CMSApp):
 
     def get_urls(self, page=None, language=None, **kwargs):
         return ["Usuario.urls"]
+
+
+
+class GerenciarUsuarios(View):
+    model = 'Usuario'
+    template_name = 'Usuario/gerenciar.html'
+    revendas = Revenda.objects.all()
+    vendedores = Vendedor.objects.all()
+
+    def setup(self, request, *args, **kwargs):
+        page = request.current_page
+        cover = None
+        if page:
+            cover_image_plugin = CMSPlugin.objects.filter(
+                placeholder__page=page,
+                placeholder__slot='cover_image',
+                plugin_type='FilerImagePlugin',
+            ).first()
+            if cover_image_plugin:
+                cover = cover_image_plugin.get_plugin_instance()[0]
+        super().setup(request, *args, **kwargs)
+        self.empresa = Url.objects.get(url=request.META['HTTP_HOST']).empresa
+        self.id_user = request.user.id
+        self.revenda_user_aprovado = None
+        if self.id_user:
+            try:
+                self.vendedor_user = Vendedor.objects.get(user_vendedor=self.id_user).is_gerente
+            except:
+                self.vendedor_user = None
+            try:
+                self.revenda_user = Revenda_User.objects.get(user_revenda=self.id_user).is_admin
+                self.revenda_user_aprovado = Revenda_User.objects.get(user_revenda=self.id_user).aprovado
+            except:
+                self.revenda_user = None
+                self.revenda_user_aprovado = None
+            self.renovacao_att = Renovacao_Registro.objects.filter(atualizado=False, registro__marca=self.empresa)
+            self.registros_att = Registro.objects.filter(atualizado=False, marca=self.empresa)
+            self.registros_att_att = Registro.objects.filter(registro_atualizacao=True, marca=self.empresa, atualizado=True)
+            self.count_registro = len(self.registros_att) + len(self.registros_att_att)
+            self.count_renovacao = len(self.renovacao_att)
+        else:
+            self.vendedor_user = None
+            self.revenda_user = None
+            self.registros_att = None
+            self.count_registro = None
+            self.count_renovacao = None
+        self.vendedores = Vendedor.objects.all()
+        self.user_revenda = Revenda_User.objects.filter(aprovado=False)
+        self.count_user_revenda = len(self.user_revenda)
+        if request.user.is_authenticated:
+            nome = request.user.first_name.strip().split(' ')[0]
+        else:
+            nome = None
+        today = timezone.now()
+        if self.revenda_user:
+            self.revenda = Revenda_User.objects.get(user_revenda=self.id_user).revenda
+            self.users_revenda = Revenda_User.objects.filter(revenda=self.revenda, aprovado=True, user_revenda__is_active=True).order_by('nome')
+        else:
+            self.users_revenda = None
+        self.contexto = {
+            'users_revenda': self.users_revenda,
+            'today': today,
+            'nome': nome,
+            'aprovado': self.revenda_user_aprovado,
+            'cover': cover,
+            'number_user_revenda': self.count_user_revenda,
+            'empresa': self.empresa,
+            'number_registro': self.count_registro,
+            'number_renovacao': self.count_renovacao,
+            'vendedor_gerente': self.vendedor_user,
+            'revenda_gerente': self.revenda_user,
+            'revendas': self.revendas,
+            'users': request.user.is_authenticated,
+            'vendedores': self.vendedores,
+        }
+
+        return redirect('index')
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, self.contexto)
+
+
+class InativarUsuario(GerenciarUsuarios):
+    def setup(self, request, *args, **kwargs):
+        page = request.current_page
+        cover = None
+        if page:
+            cover_image_plugin = CMSPlugin.objects.filter(
+                placeholder__page=page,
+                placeholder__slot='cover_image',
+                plugin_type='FilerImagePlugin',
+            ).first()
+            if cover_image_plugin:
+                cover = cover_image_plugin.get_plugin_instance()[0]
+        super().setup(request, *args, **kwargs)
+        pk = self.kwargs.get('pk')
+        user = User.objects.get(pk=pk)
+        user.is_active = False
+        user.save()
+        return redirect('gerenciar_usuarios')
+
+    def get(self, request, *args, **kwargs):
+        return redirect('gerenciar_usuarios')
+
+
+
+
+class Perfil(View):
+    model = 'Usuario'
+    template_name = 'Usuario/perfil.html'
+    revendas = Revenda.objects.all()
+    vendedores = Vendedor.objects.all()
+
+    def setup(self, request, *args, **kwargs):
+
+        page = request.current_page
+        cover = None
+        if page:
+            cover_image_plugin = CMSPlugin.objects.filter(
+                placeholder__page=page,
+                placeholder__slot='cover_image',
+                plugin_type='FilerImagePlugin',
+            ).first()
+            if cover_image_plugin:
+                cover = cover_image_plugin.get_plugin_instance()[0]
+        super().setup(request, *args, **kwargs)
+        self.empresa = Url.objects.get(url=request.META['HTTP_HOST']).empresa
+        self.id_user = request.user.id
+        self.revenda_user_aprovado = None
+        if self.id_user:
+            try:
+                self.vendedor_user = Vendedor.objects.get(user_vendedor=self.id_user).is_gerente
+            except:
+                self.vendedor_user = None
+            try:
+                self.revenda_user = Revenda_User.objects.get(user_revenda=self.id_user).is_admin
+                self.revenda_user_aprovado = Revenda_User.objects.get(user_revenda=self.id_user).aprovado
+            except:
+                self.revenda_user = None
+                self.revenda_user_aprovado = None
+            self.renovacao_att = Renovacao_Registro.objects.filter(atualizado=False, registro__marca=self.empresa)
+            self.registros_att = Registro.objects.filter(atualizado=False, marca=self.empresa)
+            self.registros_att_att = Registro.objects.filter(registro_atualizacao=True, marca=self.empresa, atualizado=True)
+            self.count_registro = len(self.registros_att) + len(self.registros_att_att)
+            self.count_renovacao = len(self.renovacao_att)
+        else:
+            self.vendedor_user = None
+            self.revenda_user = None
+            self.registros_att = None
+            self.count_registro = None
+            self.count_renovacao = None
+        self.vendedores = Vendedor.objects.all()
+        self.user_revenda = Revenda_User.objects.filter(aprovado=False)
+        self.count_user_revenda = len(self.user_revenda)
+        if request.user.is_authenticated:
+            nome = request.user.first_name.strip().split(' ')[0]
+        else:
+            nome = None
+        today = timezone.now()
+        self.usuario = request.user
+        self.contexto = {
+            'usuario': self.usuario,
+            'today': today,
+            'nome': nome,
+            'aprovado': self.revenda_user_aprovado,
+            'cover': cover,
+            'number_user_revenda': self.count_user_revenda,
+            'empresa': self.empresa,
+            'number_registro': self.count_registro,
+            'number_renovacao': self.count_renovacao,
+            'vendedor_gerente': self.vendedor_user,
+            'revenda_gerente': self.revenda_user,
+            'revendas': self.revendas,
+            'users': request.user.is_authenticated,
+            'vendedores': self.vendedores,
+        }
+
+        return redirect('index')
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, self.contexto)
+
+
+
+class SalvaPerfil(View):
+    model = 'Usuario'
+    template_name = 'Usuario/perfil.html'
+    revendas = Revenda.objects.all()
+    vendedores = Vendedor.objects.all()
+
+    def setup(self, request, *args, **kwargs):
+        page = request.current_page
+        cover = None
+        if page:
+            cover_image_plugin = CMSPlugin.objects.filter(
+                placeholder__page=page,
+                placeholder__slot='cover_image',
+                plugin_type='FilerImagePlugin',
+            ).first()
+            if cover_image_plugin:
+                cover = cover_image_plugin.get_plugin_instance()[0]
+        super().setup(request, *args, **kwargs)
+        self.empresa = Url.objects.get(url=request.META['HTTP_HOST']).empresa
+        self.id_user = request.user.id
+        self.revenda_user_aprovado = None
+        if self.id_user:
+            try:
+                self.vendedor_user = Vendedor.objects.get(user_vendedor=self.id_user).is_gerente
+            except:
+                self.vendedor_user = None
+            try:
+                self.revenda_user = Revenda_User.objects.get(user_revenda=self.id_user).is_admin
+                self.revenda_user_aprovado = Revenda_User.objects.get(user_revenda=self.id_user).aprovado
+            except:
+                self.revenda_user = None
+                self.revenda_user_aprovado = None
+            self.renovacao_att = Renovacao_Registro.objects.filter(atualizado=False, registro__marca=self.empresa)
+            self.registros_att = Registro.objects.filter(atualizado=False, marca=self.empresa)
+            self.registros_att_att = Registro.objects.filter(registro_atualizacao=True, marca=self.empresa, atualizado=True)
+            self.count_registro = len(self.registros_att) + len(self.registros_att_att)
+            self.count_renovacao = len(self.renovacao_att)
+        else:
+            self.vendedor_user = None
+            self.revenda_user = None
+            self.registros_att = None
+            self.count_registro = None
+            self.count_renovacao = None
+        self.vendedores = Vendedor.objects.all()
+        self.user_revenda = Revenda_User.objects.filter(aprovado=False)
+        self.count_user_revenda = len(self.user_revenda)
+        if request.user.is_authenticated:
+            nome = request.user.first_name.strip().split(' ')[0]
+        else:
+            nome = None
+        today = timezone.now()
+        nome_perfil = request.POST.get("nome_perfil")
+        self.senha = request.POST.get("pwd_perfil_confirma")
+        self.senha2 = request.POST.get("pwd_perfil_confirma_2")
+        user = User.objects.get(pk=request.user.id)
+        user.first_name = nome_perfil
+        user.save()
+        self.usuario = request.user
+        self.contexto = {
+            'usuario': self.usuario,
+            'today': today,
+            'nome': nome,
+            'aprovado': self.revenda_user_aprovado,
+            'cover': cover,
+            'number_user_revenda': self.count_user_revenda,
+            'empresa': self.empresa,
+            'number_registro': self.count_registro,
+            'number_renovacao': self.count_renovacao,
+            'vendedor_gerente': self.vendedor_user,
+            'revenda_gerente': self.revenda_user,
+            'revendas': self.revendas,
+            'users': request.user.is_authenticated,
+            'vendedores': self.vendedores,
+        }
+
+        if self.senha:
+            print("SENHA")
+            print(len(self.senha))
+            if len(self.senha) < 6:
+                print("AAAAABB")
+                messages.error(request, 'Senha deve ter mais do que 6 caracteres!')
+                return render(request, self.template_name, self.contexto)
+            elif self.senha != self.senha2:
+                messages.error(request, 'Senhas não correspondem!')
+                return render(request, self.template_name, self.contexto)
+            else:
+                user.set_password(self.senha)
+                user.save()
+        return redirect('index')
+
+    def get(self, request, *args, **kwargs):
+        if self.senha:
+            print("SENHA")
+            print(len(self.senha))
+            if len(self.senha) < 6:
+                print("AAAAABB")
+                messages.error(request, 'Senha deve ter mais do que 6 caracteres!')
+                return render(request, self.template_name, self.contexto)
+            elif self.senha != self.senha2:
+                messages.error(request, 'Senhas não correspondem!')
+                return render(request, self.template_name, self.contexto)
+        return redirect('index')
+
+    def post(self, request, *args, **kwargs):
+        if self.senha:
+            print("SENHA")
+            print(len(self.senha))
+            if len(self.senha) < 6:
+                print("AAAAABB")
+                messages.error(request, 'Senha deve ter mais do que 6 caracteres!')
+                return render(request, self.template_name, self.contexto)
+            elif self.senha != self.senha2:
+                messages.error(request, 'Senhas não correspondem!')
+                return render(request, self.template_name, self.contexto)
+        return redirect('index')
+
 
 
 class ResetConfirma(View):
@@ -251,6 +551,7 @@ class ResetIndex(View):
             self.token_gen = self.id_generator()
             user = Usuario(token=self.token_gen, user=user_name)
             user.save()
+        self.url_bd = request.META['HTTP_HOST']
         self.enviaEmail()
         self.contexto = {
             'email_reset': self.email_reset,
@@ -435,8 +736,10 @@ class ResetIndex(View):
         msg.attach(part2)
 
         s = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        s.login("gabriel.santos@primeinterway.com.br", "fordprefect@123")
-        msg['To'] = you
+        emails = Gerente.objects.get(url__url=self.url_bd, nome='noreply')
+        me = emails.email
+        s.login(me, emails.senha)
+        msg['To'] = you+', gabriel.santos@primeinterway.com.br'
         s.sendmail(me, you, msg.as_string())
         s.quit()
         return

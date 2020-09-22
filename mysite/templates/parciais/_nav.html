@@ -31,11 +31,16 @@
 
                               <div class="dropdown-menu"  aria-labelledby="dropdownMenuLink">
                                   <a class="dropdown-item" href="{% url 'index' %}">Página Inicial</a>
-                                  {% if users and not vendedor_gerente%}
-                                      {% if revenda_gerente%}
+                                  <a class="dropdown-item" href="{% url 'perfil' %}">Editar Perfil</a>
+                                  <a class="dropdown-item" href="{% url 'expirado' %}#registro_oportunidade">Registros Vencidos - Necessário Renovar</a>
+                                  {% if users and not vendedor_gerente and aprovado%}
+                                      {% if revenda_gerente %}
+                                            <a class="dropdown-item" href="{% url 'gerenciar_usuarios' %}">Gerenciar usuários</a>
+                                        {% if index %}
                                           <div class="dropdown-item"  data-toggle="modal" data-target="#cadastrar_modal" >
                                             Cadastrar Usuário
                                         </div>
+                                        {% endif %}
                                       {% endif %}
                                     <a class="dropdown-item" href="{% url 'detalhes' %}#registro_oportunidade">Meus Registros </a>
                                     <a class="dropdown-item" href="{% url 'renovacoes' %}">Renovações <span class="badge badge-light">{{number_renovacao}}</span></a>
