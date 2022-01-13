@@ -4,7 +4,7 @@ dj-database-url==0.5.0
 Django==2.2.3
 django-appdata==0.2.2
 django-classy-tags==1.0.0
-django-cms==3.7.1
+django-cms==3.7.4
 django-filer==1.7.0
 django-formtools==2.2
 django-heroku==0.3.1
